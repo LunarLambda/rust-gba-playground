@@ -11,5 +11,13 @@ edition = "2021"
 [dependencies]
 minrt-sys = { path = "./minrt-sys" }
 
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+debug = true
+opt-level = "s"
+panic = "abort"
+
 [profile.dev.package.compiler_builtins]
 overflow-checks = false
