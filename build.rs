@@ -9,6 +9,7 @@ fn main() {
         println!("cargo:rustc-link-arg-bins={}", s);
     }
 
-    println!("cargo:rustc-link-arg-bins=-Map=play.map");
-    println!("cargo:rustc-link-lib=static=minrt_rom");
+    for s in env("DEP_MINRT_LINK_LIBS").split(':') {
+        println!("cargo:rustc-link-lib=static={}", s);
+    }
 }
