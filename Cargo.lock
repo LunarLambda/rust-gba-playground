@@ -3,6 +3,10 @@
 version = 3
 
 [[package]]
+name = "libplayground"
+version = "0.1.0"
+
+[[package]]
 name = "minrt-sys"
 version = "0.1.0"
 
@@ -10,5 +14,6 @@ version = "0.1.0"
 name = "rust-gba-playground"
 version = "0.1.0"
 dependencies = [
+ "libplayground",
  "minrt-sys",
 ]
