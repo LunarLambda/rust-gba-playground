@@ -3,8 +3,6 @@
 
 use libplayground::bits::*;
 
-const TEST: u16 = Bits::<u16>::mask(16);
-
 #[no_mangle]
 unsafe extern "C" fn main() -> ! {
 
