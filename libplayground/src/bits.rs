@@ -1,3 +1,5 @@
+//! Low-level wrapper type for manipulating bitfields
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Default, Hash)]
 #[repr(transparent)]
 pub struct Bits<T>(pub T);
@@ -14,6 +16,7 @@ macro_rules! bits_impl {
             /// Checks that the given value fits inside of the bitfield.
             const fn check_value(length: usize, value: $T)
             {
+                assert!(length < <$T>::BITS as usize);
                 assert!(value < (1 << length) - 1);
             }
 
@@ -24,24 +27,8 @@ macro_rules! bits_impl {
                 ((1 << length) - 1) << offset
             }
 
-            /// Sets the given bit to the given value.
-            pub const fn set_bit(mut self, bit: usize, value: bool) -> Self {
-                Self::check_field(bit, 1);
-
-                self.0 &= !(1 << bit);
-                self.0 |= (value as $T) << bit;
-                self
-            }
-
-            /// Gets the given bit.
-            pub const fn get_bit(self, bit: usize) -> bool {
-                Self::check_field(bit, 1);
-
-                self.0 & (1 << bit) != 0
-            }
-
             /// Sets the given bits to the given value.
-            pub const fn set_bits(mut self, offset: usize, length: usize, value: $T) -> Self
+            pub const fn set_field(mut self, offset: usize, length: usize, value: $T) -> Self
             {
                 Self::check_field(offset, length);
                 Self::check_value(length, value);
@@ -54,39 +41,62 @@ macro_rules! bits_impl {
             }
 
             /// Gets the given bits.
-            pub const fn get_bits(self, offset: usize, length: usize) -> $T {
+            pub const fn get_field(self, offset: usize, length: usize) -> $T {
                 Self::check_field(offset, length);
 
                 (self.0 & Self::mask(offset, length)) >> offset
             }
 
-            /// Splices the given bits from the given value.
-            pub const fn splice_bits(mut self, offset: usize, length: usize, value: $T) -> Self {
+            /// Logical ORs the given bits.
+            pub const fn or_field(mut self, offset: usize, length: usize, value: $T) -> Self {
                 Self::check_field(offset, length);
+                Self::check_value(length, value);
 
-                let mask = Self::mask(offset, length);
-
-                self.0 &= !mask;
-                self.0 |= value & mask;
+                self.0 |= value << offset;
                 self
             }
 
-            /// Isolates the given bits.
-            pub const fn isolate_bits(mut self, offset: usize, length: usize) -> Self {
+            /// Logical ANDs the given bits.
+            pub const fn and_field(mut self, offset: usize, length: usize, value: $T) -> Self {
                 Self::check_field(offset, length);
+                Self::check_value(length, value);
 
-                self.0 &= Self::mask(offset, length);
+                self.0 &= value << offset;
                 self
             }
 
-            /// Returns a new value with the given bits.
-            pub const fn with_bits(offset: usize, length: usize, value: $T) -> Self {
-                Self(0).set_bits(offset, length, value)
+            /// Logical XORs the given bits.
+            pub const fn xor_field(mut self, offset: usize, length: usize, value: $T) -> Self {
+                Self::check_field(offset, length);
+                Self::check_value(length, value);
+
+                self.0 ^= value << offset;
+                self
             }
 
-            /// Returns a new value with the given bit.
-            pub const fn with_bit(bit: usize, value: bool) -> Self {
-                Self(0).set_bit(bit, value)
+            /// Performs a bit clear on the given bits.
+            pub const fn bic_field(mut self, offset: usize, length: usize, value: $T) -> Self {
+                Self::check_field(offset, length);
+                Self::check_value(length, value);
+
+                self.0 &= !(value << offset);
+                self
+            }
+
+            /// Logical NOTs the given bits.
+            pub const fn not_field(mut self, offset: usize, length: usize) -> Self {
+                Self::check_field(offset, length);
+
+                self.0 ^= Self::mask(offset, length);
+                self
+            }
+
+            /// Clears the given bits.
+            pub const fn clear_field(mut self, offset: usize, length: usize) -> Self {
+                Self::check_field(offset, length);
+
+                self.0 &= !Self::mask(offset, length);
+                self
             }
         }
     )*}
