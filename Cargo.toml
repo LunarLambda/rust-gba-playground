@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-minrt-sys = { path = "minrt-sys" }
-libplayground = { path = "libplayground" }
+gba-rt = { path = "gba-rt" }
+gba = { package = "libplayground", path = "libplayground" }
 
 [profile.dev]
 panic = "abort"
