@@ -1,12 +1,26 @@
 #![no_std]
 #![no_main]
 
+use gba::video::{DisplayControl, Layers, Mode3};
+
+unsafe fn m3_pixel(x: usize, y: usize, col: u16) {
+    (0x0600_0000 as *mut u16).add(x + y * 240).write(col);
+}
+
 #[gba::entry]
-unsafe fn main(_: gba::Gba) -> ! {
-    (0x04000000 as *mut u16).write_volatile(0x0403);
-    (0x06000000 as *mut u16).add(240 * 80 + 120).write(0x001F);
-    (0x06000000 as *mut u16).add(240 * 80 + 136).write(0x03E0);
-    (0x06000000 as *mut u16).add(240 * 96 + 120).write(0x7C00);
+fn main(gba: gba::Gba) -> ! {
+    let mut display = gba.display.mode::<Mode3>();
+
+    display
+        .control
+        .write(DisplayControl::new().enable_layers(Layers::BG2));
+
+    unsafe {
+        m3_pixel(120, 80, 0x001F);
+        m3_pixel(136, 80, 0x03E0);
+        m3_pixel(120, 96, 0x7C00);
+    }
+
     loop {}
 }
 

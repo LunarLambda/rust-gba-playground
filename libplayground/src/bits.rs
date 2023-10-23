@@ -27,6 +27,16 @@ macro_rules! bits_impl {
                 ((1 << length) - 1) << offset
             }
 
+            /// Set the given bit.
+            pub const fn set_bit(self, offset: usize, value: bool) -> Self {
+                self.set_field(offset, 1, value as $T)
+            }
+
+            /// Get the given bit.
+            pub const fn get_bit(self, offset: usize) -> bool {
+                self.get_field(offset, 1) != 0
+            }
+
             /// Sets the given bits to the given value.
             pub const fn set_field(mut self, offset: usize, length: usize, value: $T) -> Self
             {
@@ -89,6 +99,13 @@ macro_rules! bits_impl {
 
                 self.0 ^= Self::mask(offset, length);
                 self
+            }
+
+            /// Isolate the given bits, clearing everything else.
+            pub const fn isolate_field(self, offset: usize, length: usize) -> Self {
+                Self::check_field(offset, length);
+
+                Self(self.0 & Self::mask(offset, length))
             }
 
             /// Clears the given bits.
